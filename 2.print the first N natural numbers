@@ -1,0 +1,47 @@
+class PrintNumbers implements Runnable {
+    private static int counter = 1;
+    private static final Object lock = new Object();
+    private int n;
+
+    public PrintNumbers(int n) {
+        this.n = n;
+    }
+
+    public void run() {
+        synchronized (lock) {
+            while (counter <= n) {
+                System.out.println(Thread.currentThread().getName() + ": " + counter);
+                counter++;
+
+                // Notify the waiting thread
+                lock.notify();
+
+                try {
+                    // Release the lock and allow the other thread to run
+                    if (counter <= n) {
+                        lock.wait();
+                    }
+                } catch (InterruptedException e) {
+                    e.printStackTrace();
+                }
+            }
+        }
+    }
+}
+
+public class TwoThreadsPrintNumbers {
+    public static void main(String[] args) {
+        int n = 18;
+
+        // Create an instance of the Runnable implementation
+        PrintNumbers printNumbers = new PrintNumbers(n);
+
+        // Create two threads and associate them with the Runnable object
+        Thread t1 = new Thread(printNumbers, "Thread 1");
+        Thread t2 = new Thread(printNumbers, "Thread 2");
+
+        // Start the threads
+        t1.start();
+        t2.start();
+    }
+}
